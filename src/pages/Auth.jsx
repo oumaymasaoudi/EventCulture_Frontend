@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -40,17 +39,13 @@ const professionalRegisterSchema = baseRegisterSchema.extend({
   description: z.string().min(10, 'Description trop courte'),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
-type BaseRegisterForm = z.infer<typeof baseRegisterSchema>;
-type ProfessionalRegisterForm = z.infer<typeof professionalRegisterSchema>;
-
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [userType, setUserType] = useState<'participant' | 'professionnel'>('participant');
+  const [userType, setUserType] = useState('participant');
 
   // Formulaire de connexion
-  const loginForm = useForm<LoginForm>({
+  const loginForm = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
@@ -59,7 +54,7 @@ const Auth = () => {
   });
 
   // Formulaire d'inscription
-  const registerForm = useForm<BaseRegisterForm | ProfessionalRegisterForm>({
+  const registerForm = useForm({
     resolver: zodResolver(userType === 'professionnel' ? professionalRegisterSchema : baseRegisterSchema),
     defaultValues: {
       name: '',
@@ -78,90 +73,87 @@ const Auth = () => {
     }
   });
 
-  const handleLogin = async (data: LoginForm) => {
-  try {
-    const res = await fetch('http://localhost:5000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  const handleLogin = async (data) => {
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-    if (!res.ok) throw new Error('Identifiants invalides');
+      if (!res.ok) throw new Error('Identifiants invalides');
 
-    const result = await res.json();
-    console.log('✅ Utilisateur connecté :', result);
+      const result = await res.json();
+      console.log('Utilisateur connecté :', result);
 
-    toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
+      toast({ title: 'Connexion réussie', description: 'Bienvenue !' });
 
-    // Stocker le token ou l'utilisateur si besoin
-    localStorage.setItem('token', result.token);
-localStorage.setItem('user', JSON.stringify(result.user));
+      // Stocker le token ou l'utilisateur si besoin
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('user', JSON.stringify(result.user));
 
-    navigate('/dashboard');
-  } catch (err) {
-    toast({
-      title: 'Erreur de connexion',
-      description: err.message,
-      variant: 'destructive',
-    });
-  }
-};
+      navigate('/dashboard');
+    } catch (err) {
+      toast({
+        title: 'Erreur de connexion',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
+  };
 
-  const handleRegister = async (data: BaseRegisterForm | ProfessionalRegisterForm) => {
-  console.log("🟣 handleRegister déclenché avec les données :", data);
+  const handleRegister = async (data) => {
+    console.log("handleRegister déclenché avec les données :", data);
 
-  if (data.password !== data.confirmPassword) {
-    toast({
-      title: "Erreur d'inscription",
-      description: "Les mots de passe ne correspondent pas.",
-      variant: "destructive",
-    });
-    return;
-  }
-
-  try {
-    const response = await fetch('http://localhost:5000/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-     body: JSON.stringify({
-  first_name: data.name,
-  last_name: "", // pour ne pas bloquer Sequelize si c’est requis
-  email: data.email,
-  password: data.password,
-  phone: data.phone,
-  role: data.userType,
-  organization: data.userType === 'professionnel' ? (data as ProfessionalRegisterForm).organization : null
-}),
-
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erreur lors de l’inscription');
+    if (data.password !== data.confirmPassword) {
+      toast({
+        title: "Erreur d'inscription",
+        description: "Les mots de passe ne correspondent pas.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    const result = await response.json();
-    console.log('✔️ Utilisateur créé :', result);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_name: data.name,
+          last_name: "", // pour ne pas bloquer Sequelize si c’est requis
+          email: data.email,
+          password: data.password,
+          phone: data.phone,
+          role: data.userType,
+          organization: data.userType === 'professionnel' ? data.organization : null
+        }),
+      });
 
-    toast({
-      title: "Inscription réussie",
-      description: `Bienvenue ${data.name} !`,
-    });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors de l’inscription');
+      }
 
-    navigate('/dashboard');
-  } catch (error) {
-    console.error('❌ Erreur d’enregistrement :', error.message);
-    toast({
-      title: "Erreur d'inscription",
-      description: error.message,
-      variant: "destructive",
-    });
-  }
-};
+      const result = await response.json();
+      console.log('Utilisateur créé :', result);
 
+      toast({
+        title: "Inscription réussie",
+        description: `Bienvenue ${data.name} !`,
+      });
 
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Erreur d’enregistrement :', error.message);
+      toast({
+        title: "Erreur d'inscription",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-nude-50 via-stone-50 to-nude-100">
@@ -282,7 +274,7 @@ localStorage.setItem('user', JSON.stringify(result.user));
                             <FormControl>
                               <RadioGroup
                                 value={field.value}
-                                onValueChange={(value: 'participant' | 'professionnel') => {
+                                onValueChange={(value) => {
                                   field.onChange(value);
                                   setUserType(value);
                                 }}

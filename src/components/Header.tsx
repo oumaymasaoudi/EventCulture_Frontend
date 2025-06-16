@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Route, MapPin, Plus, ClipboardList, Landmark } from 'lucide-react';
+import { Calendar, Route, MapPin, ClipboardList, Landmark } from 'lucide-react';
+import placeholder from '../assets/UserPlaceholder.png';
 
 const Header = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const role = user?.role;
+  const userId = user?.id;
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setDropdownOpen(false);
+  }
+  const toggleDropdown = () => setDropdownOpen(prev => !prev);
 
   return (
     <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-white/20 sticky top-0 z-50">
@@ -20,7 +29,6 @@ const Header = () => {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">
-
             {/* ÉVÉNEMENTS */}
             <div className="relative group">
               <button className="flex items-center text-slate-700 hover:text-violet-600 transition-colors font-medium">
@@ -163,20 +171,45 @@ const Header = () => {
             </Link>
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <Link
-              to="/auth"
-              className="text-slate-700 hover:text-violet-600 transition-colors font-medium"
-            >
-              Connexion
-            </Link>
-            <Link
-              to="/dashboard"
-              className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-black px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              Mon espace
-            </Link>
-          </div>
+          <div className="relative flex items-center space-x-4">
+            {/* Bulle utilisateur */}
+            { user && (
+              <div className="relative">
+                <button onClick={toggleDropdown} className="w-10 h-10 rounded-full overflow-hidden focus:outline-none">
+                  <img src={placeholder} alt="User" className="w-full h-full object-cover" />
+                </button>
+
+                {/* Menu déroulant */}
+                {dropdownOpen && (
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-40 bg-white rounded-lg shadow-lg border border-slate-200">
+                    <Link
+                      to={`/settings/${userId}`}
+                      className="block px-4 py-2 text-slate-700 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Paramètres
+                    </Link>
+                    <Link
+                      to="/"
+                      className="block px-4 py-2 text-slate-700 hover:bg-violet-50 hover:text-violet-600 transition-colors"
+                      onClick={handleLogout}
+                    >
+                      Déconnexion
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!user && (
+              <Link
+                to="/auth"
+                className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Connexion
+              </Link>
+            )}
+          </div>  
         </div>
       </div>
     </header>

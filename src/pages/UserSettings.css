@@ -1,0 +1,42 @@
+.button-pill {
+    width: 90px;
+    height: 35px;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.5s, transform 0.3s;
+}
+
+.cancel {
+    background-color: #FF0000;
+}
+
+.cancel:hover {
+    background-color: rgba(244, 67, 54, 0.8);
+}
+
+.validate {
+    background-color: #32CD32;
+}
+
+.validate:hover {
+    background-color: rgba(76, 175, 80, 0.8);
+}
+
+.right {
+    margin-left: 7%;
+}
+
+.left {
+    width: 95%;
+}
+
+.name {
+    width: 90% ;
+}
+
+.trait {
+    border-left-color: #000000 !important;
+    background-color: transparent !important;
+    color: #000000 !important;
+}

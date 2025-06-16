@@ -24,9 +24,10 @@ import ParcoursDetail from "./pages/ParcoursDetail";
 import Pricing from "./pages/Pricing.jsx";
 import About from "./pages/About";
 import Dashboard from "./pages/Dashboard";
-import Auth from "./pages/Auth";
+import Auth from "./pages/Auth.jsx";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound.jsx";
+import UserSettings from './pages/UserSettings.jsx';
 
 import Lieux from "./pages/Lieux.jsx";
 import Sites from "./pages/Sites.jsx";
@@ -83,6 +84,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings/:id" element={<UserSettings />} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
