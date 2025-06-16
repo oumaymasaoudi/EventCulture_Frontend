@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    background-color: #f5f3ff !important;
+
+    --foreground: 15 23 42;
+
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+
+    --popover: 255 255 255;
+    --popover-foreground: 15 23 42;
+
+    --primary: 139 92 246;
+    --primary-foreground: 248 250 252;
+
+    --secondary: 248 248 246;
+    --secondary-foreground: 51 65 85;
+
+    --muted: 248 248 246;
+    --muted-foreground: 100 116 139;
+
+    --accent: 248 248 246;
+    --accent-foreground: 51 65 85;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 248 250 252;
+
+    --border: 231 229 228;
+    --input: 231 229 228;
+    --ring: 139 92 246;
+
+    --radius: 1rem;
+
+    --sidebar-background: 255 255 255;
+    --sidebar-foreground: 51 65 85;
+    --sidebar-primary: 139 92 246;
+    --sidebar-primary-foreground: 248 250 252;
+    --sidebar-accent: 248 248 246;
+    --sidebar-accent-foreground: 51 65 85;
+    --sidebar-border: 231 229 228;
+    --sidebar-ring: 139 92 246;
+  }
+
+  .dark {
+    --background: 15 23 42;
+    --foreground: 248 250 252;
+
+    --card: 30 41 59;
+    --card-foreground: 248 250 252;
+
+    --popover: 30 41 59;
+    --popover-foreground: 248 250 252;
+
+    --primary: 147 197 253;
+    --primary-foreground: 15 23 42;
+
+    --secondary: 68 64 60;
+    --secondary-foreground: 226 232 240;
+
+    --muted: 68 64 60;
+    --muted-foreground: 148 163 184;
+
+    --accent: 68 64 60;
+    --accent-foreground: 226 232 240;
+
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
+
+    --border: 68 64 60;
+    --input: 68 64 60;
+    --ring: 147 197 253;
+
+    --sidebar-background: 15 23 42;
+    --sidebar-foreground: 226 232 240;
+    --sidebar-primary: 147 197 253;
+    --sidebar-primary-foreground: 15 23 42;
+    --sidebar-accent: 68 64 60;
+    --sidebar-accent-foreground: 226 232 240;
+    --sidebar-border: 68 64 60;
+    --sidebar-ring: 147 197 253;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-playfair;
+  }
+
+  /* Correction inputs, select, textarea */
+  input, select, textarea {
+    border: 2px solid #6b21a8 !important; /* Mauve foncé */
+    color: #1f2937 !important; /* Texte foncé */
+    background-color: #fff !important;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #6b21a8 !important; /* Mauve foncé focus */
+    box-shadow: 0 0 0 2px rgba(107, 33, 168, 0.3); /* Optionnel */
+  }
+
+  label {
+    color: #000000 !important; /* Noir pur */
+    font-weight: 500;
+  }
+}
+
+@layer components {
+  .gradient-hero {
+    background: linear-gradient(135deg, #d8b4fe 0%, #c084fc 50%, #a855f7 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(135deg, rgba(216, 180, 254, 0.1) 0%, rgba(192, 132, 252, 0.1) 100%);
+  }
+
+  .pastel-bg-1 {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 50%, #c084fc 100%);
+  }
+
+  .pastel-bg-2 {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 50%, #c084fc 100%);
+  }
+
+  .pastel-bg-3 {
+    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 50%, #c084fc 100%);
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #8b5cf6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #d8b4fe, #c084fc);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #c084fc, #a855f7);
+}
+
+
