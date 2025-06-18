@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'; // 🟣 IMPORTANT !!!
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -8,6 +7,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { useParams, useNavigate } from 'react-router-dom';
+
 
 const CreateProgram = () => {
 const { toast } = useToast();
@@ -15,6 +16,7 @@ const token = localStorage.getItem("token");
 const user = JSON.parse(localStorage.getItem("user"));
 
 const { eventId, programId } = useParams(); // 🟣 Ajout programId
+const navigate = useNavigate(); // ✅ Cette ligne est manquante
 
 const [selectedEventId, setSelectedEventId] = useState(eventId || '');
 const [programs, setPrograms] = useState([{
@@ -200,6 +202,8 @@ useEffect(() => {
         title: 'Succès',
         description: 'Tous les programmes ont été enregistrés.',
       });
+
+      navigate(`/program/list/${selectedEventId}`);
 
       // Réinitialiser le formulaire
       setPrograms([{

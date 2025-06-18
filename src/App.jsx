@@ -32,6 +32,11 @@ import UserSettings from './pages/UserSettings.jsx';
 import Lieux from "./pages/Lieux.jsx";
 import Sites from "./pages/Sites.jsx";
 import Programs from "./pages/Programs.jsx";
+import ProgramListView from './pages/ProgramListView';
+import ParcoursParticipationView from '@/pages/ParcoursParticipationView';
+
+
+
 
 // React Query Client
 const queryClient = new QueryClient();
@@ -62,12 +67,15 @@ const App = () => (
           <Route path="/parcours" element={<Parcours />} />
           <Route path="/parcours/:id" element={<ParcoursDetail />} />
 
+<Route path="/participer-au-parcours/:id" element={<ParcoursParticipationView />} />
+
           {/* Programmes → attention à l'ordre des routes */}
           <Route path="/create-program/event/:eventId" element={<CreateProgram />} />
           <Route path="/create-program/edit/:programId" element={<CreateProgram />} />
           <Route path="/create-program" element={<CreateProgram />} />
           <Route path="/programs" element={<Programs />} />
-
+           <Route path="/program/list/:eventId" element={<ProgramListView />} />
+       
           {/* Lieux */}
           <Route path="/create-lieu" element={<CreateLieu />} />
           <Route path="/create-lieu/:id" element={<CreateLieu />} />

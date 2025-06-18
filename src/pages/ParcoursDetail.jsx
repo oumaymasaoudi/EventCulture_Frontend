@@ -56,16 +56,33 @@ const ParcoursDetail = () => {
               <h1 className="text-4xl font-bold text-slate-800">{parcours.title}</h1>
               <p className="text-slate-500 text-lg">{parcours.theme}</p>
             </div>
-            <div className="flex gap-4">
-              <Button onClick={handleEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">
-                <Edit className="w-5 h-5 mr-2" />
-                Modifier
-              </Button>
-              <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow">
-                <Trash2 className="w-5 h-5 mr-2" />
-                Supprimer
-              </Button>
-            </div>
+           
+           <div className="flex gap-4">
+  {/* Si l'utilisateur est professionnel : afficher Modifier/Supprimer */}
+  {JSON.parse(localStorage.getItem('user'))?.role === 'professionnel' && (
+    <>
+      <Button onClick={handleEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">
+        <Edit className="w-5 h-5 mr-2" />
+        Modifier
+      </Button>
+      <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow">
+        <Trash2 className="w-5 h-5 mr-2" />
+        Supprimer
+      </Button>
+    </>
+  )}
+
+  {/* Si l'utilisateur est participant : afficher Participer */}
+  {JSON.parse(localStorage.getItem('user'))?.role === 'participant' && (
+    <Button
+      onClick={() => navigate(`/participer-au-parcours/${id}`)}
+      className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow"
+    >
+      Participer
+    </Button>
+  )}
+</div>
+
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 mt-8">
