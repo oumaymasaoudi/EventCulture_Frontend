@@ -172,21 +172,27 @@ const Auth = () => {
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-nude-100">
-              <TabsTrigger value="login" className="flex items-center gap-2 data-[state=active]:bg-white">
-                <LogIn className="w-4 h-4" />
-                Se connecter
-              </TabsTrigger>
-              <TabsTrigger value="register" className="flex items-center gap-2 data-[state=active]:bg-white">
-                <UserPlus className="w-4 h-4" />
-                S'inscrire
-              </TabsTrigger>
-            </TabsList>
+            <TabsTrigger 
+              value="login" 
+              className="flex items-center gap-2 text-black bg-white hover:bg-blue-500 hover:text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            >
+              <LogIn className="w-4 h-4" />
+              Se connecter
+            </TabsTrigger>
+            <TabsTrigger 
+              value="register" 
+              className="flex items-center gap-2 text-black bg-white hover:bg-blue-500 hover:text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+            >
+              <UserPlus className="w-4 h-4" />
+              S'inscrire
+            </TabsTrigger>
+          </TabsList>
 
             <TabsContent value="login">
               <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-nude-200">
                 <CardHeader>
-                  <CardTitle className="text-xl text-slate-800">Connexion</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-xl text-slate-800 mx-auto">Connexion</CardTitle>
+                  <CardDescription className="text-black">
                     Entrez vos identifiants pour accéder à votre compte
                   </CardDescription>
                 </CardHeader>
@@ -201,7 +207,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Email</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="votre@email.com"
                                   className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
@@ -227,7 +233,7 @@ const Auth = () => {
                             </div>
                             <FormControl>
                               <div className="relative">
-                                <KeyRound className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
@@ -312,7 +318,7 @@ const Auth = () => {
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <User className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder={userType === 'professionnel' ? 'Nom du responsable' : 'Votre nom complet'}
                                   className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
@@ -333,7 +339,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Email</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Mail className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   type="email"
                                   placeholder="votre@email.com"
@@ -358,7 +364,7 @@ const Auth = () => {
                                 <FormLabel className="text-slate-700 font-medium">Nom de l'organisation</FormLabel>
                                 <FormControl>
                                   <div className="relative">
-                                    <Building className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                     <Input
                                       placeholder="Nom de votre institution"
                                       className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
@@ -420,7 +426,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Téléphone</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Phone className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="06 12 34 56 78"
                                   className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
@@ -441,7 +447,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Adresse</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <MapPin className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="Votre adresse complète"
                                   className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
@@ -463,7 +469,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Mot de passe</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <KeyRound className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
@@ -485,7 +491,7 @@ const Auth = () => {
                             <FormLabel className="text-slate-700 font-medium">Confirmer le mot de passe</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <KeyRound className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
+                                <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
@@ -509,6 +515,8 @@ const Auth = () => {
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
+                                className="w-5 h-5"
+                                style={{ accentColor: 'black' }} 
                               />
                             </FormControl>
                             <div className="space-y-1 leading-none">
