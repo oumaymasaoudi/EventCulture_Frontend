@@ -157,4 +157,10 @@
   background: linear-gradient(to bottom, #c084fc, #a855f7);
 }
 
+::placeholder {
+  color: theme('colors.nude.700'); /* ou gris foncé lisible */
+  opacity: 1;
+}
+
+
 

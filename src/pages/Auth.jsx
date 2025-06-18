@@ -204,7 +204,8 @@ const Auth = () => {
                                 <Mail className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="votre@email.com"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -231,7 +232,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -315,7 +317,8 @@ const Auth = () => {
                                 <User className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder={userType === 'professionnel' ? 'Nom du responsable' : 'Votre nom complet'}
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -337,7 +340,8 @@ const Auth = () => {
                                 <Input
                                   type="email"
                                   placeholder="votre@email.com"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -361,7 +365,8 @@ const Auth = () => {
                                     <Building className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
                                     <Input
                                       placeholder="Nom de votre institution"
-                                      className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                      className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                       {...field}
                                     />
                                   </div>
@@ -423,7 +428,8 @@ const Auth = () => {
                                 <Phone className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="06 12 34 56 78"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -444,7 +450,8 @@ const Auth = () => {
                                 <MapPin className="absolute left-3 top-3 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="Votre adresse complète"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -467,7 +474,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -489,7 +497,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>

@@ -15,7 +15,7 @@ const CreateParcours = () => {
     difficulty: '',
     duration: '',
     lieu_id: '',
-    user_id: '1',
+    user_id: '', // récupéré dynamiquement plus tard
     image: null
   });
 
@@ -23,34 +23,37 @@ const CreateParcours = () => {
   const [lieux, setLieux] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Charger les lieux
   useEffect(() => {
     axios
       .get('http://localhost:5000/api/lieux')
       .then((res) => setLieux(res.data))
-      .catch((err) => console.error('Erreur lors du chargement des lieux :', err));
+      .catch((err) => console.error('Erreur chargement lieux :', err));
+
+    // récupérer l'utilisateur connecté depuis le localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.id) {
+      setFormData((prev) => ({ ...prev, user_id: user.id }));
+    }
   }, []);
 
-  // Charger le parcours en mode édition SEULEMENT si id est défini
   useEffect(() => {
     if (id) {
       axios
         .get(`http://localhost:5000/api/parcours/${id}`)
         .then((res) => {
           const data = res.data;
-          setFormData({
+          setFormData((prev) => ({
+            ...prev,
             title: data.title,
             description: data.description,
             theme: data.theme,
             difficulty: data.difficulty,
             duration: data.duration,
-            lieu_id: data.Lieu ? data.Lieu.id : '',
-            user_id: '1',
-            image: null
-          });
+            lieu_id: data.Lieu ? data.Lieu.id : ''
+          }));
           setPreviewImage(data.image ? `http://localhost:5000/uploads/${data.image}` : null);
         })
-        .catch((err) => console.error('Erreur lors du chargement du parcours :', err));
+        .catch((err) => console.error('Erreur chargement parcours :', err));
     }
   }, [id]);
 
@@ -76,24 +79,20 @@ const CreateParcours = () => {
     formPayload.append('duration', formData.duration);
     formPayload.append('lieu_id', formData.lieu_id);
     formPayload.append('user_id', formData.user_id);
-    if (formData.image) {
-      formPayload.append('image', formData.image);
-    }
+    if (formData.image) formPayload.append('image', formData.image);
 
     try {
       if (id) {
-        // Mode édition → PUT
         await axios.put(`http://localhost:5000/api/parcours/${id}`, formPayload);
-        alert('Parcours modifié avec succès.');
+        alert('Parcours modifié.');
       } else {
-        // Mode création → POST
         await axios.post('http://localhost:5000/api/parcours/create', formPayload);
-        alert('Parcours créé avec succès.');
+        alert('Parcours créé.');
       }
       navigate('/parcours');
     } catch (err) {
-      console.error('Erreur lors de la soumission du formulaire :', err);
-      alert('Erreur lors de la soumission du formulaire.');
+      console.error('Erreur soumission formulaire :', err);
+      alert('Erreur lors de la soumission.');
     } finally {
       setLoading(false);
     }
@@ -107,75 +106,49 @@ const CreateParcours = () => {
           {id ? 'Modifier le parcours' : 'Créer un parcours'}
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-lg border">
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Titre</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            />
+            <input type="text" name="title" value={formData.title} onChange={handleChange} required className="w-full border rounded p-2" />
           </div>
 
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            />
+            <textarea name="description" value={formData.description} onChange={handleChange} required className="w-full border rounded p-2" />
           </div>
 
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Thème</label>
-            <input
-              type="text"
-              name="theme"
-              value={formData.theme}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            />
+            <select name="theme" value={formData.theme} onChange={handleChange} required className="w-full border rounded p-2 bg-white">
+              <option value="">Sélectionnez un thème</option>
+              <option value="Histoire">Histoire</option>
+              <option value="Architecture">Architecture</option>
+              <option value="Art">Art</option>
+              <option value="Religion">Religion</option>
+              <option value="Gastronomie">Gastronomie</option>
+              <option value="Littérature">Littérature</option>
+              <option value="Musique">Musique</option>
+            </select>
           </div>
 
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Difficulté</label>
-            <input
-              type="text"
-              name="difficulty"
-              value={formData.difficulty}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            />
+            <select name="difficulty" value={formData.difficulty} onChange={handleChange} required className="w-full border rounded p-2 bg-white">
+              <option value="">Sélectionnez une difficulté</option>
+              <option value="facile">Facile</option>
+              <option value="modéré">Modéré</option>
+              <option value="difficile">Difficile</option>
+            </select>
           </div>
 
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Durée (minutes)</label>
-            <input
-              type="number"
-              name="duration"
-              value={formData.duration}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            />
+            <input type="number" name="duration" value={formData.duration} onChange={handleChange} required className="w-full border rounded p-2" />
           </div>
 
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Lieu</label>
-            <select
-              name="lieu_id"
-              value={formData.lieu_id}
-              onChange={handleChange}
-              required
-              className="w-full border rounded p-2"
-            >
+            <select name="lieu_id" value={formData.lieu_id} onChange={handleChange} required className="w-full border rounded p-2">
               <option value="">-- Sélectionner un lieu --</option>
               {lieux.map((lieu) => (
                 <option key={lieu.id} value={lieu.id}>
@@ -188,18 +161,10 @@ const CreateParcours = () => {
           <div>
             <label className="block text-slate-700 font-semibold mb-2">Image</label>
             <input type="file" name="image" accept="image/*" onChange={handleChange} />
-            {previewImage && (
-              <div className="mt-4">
-                <img src={previewImage} alt="Preview" className="w-48 h-48 object-cover rounded border" />
-              </div>
-            )}
+            {previewImage && <img src={previewImage} alt="Preview" className="mt-4 w-48 h-48 object-cover rounded border" />}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow"
-          >
+          <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow">
             {loading ? 'Traitement en cours...' : id ? 'Modifier' : 'Créer'}
           </button>
         </form>

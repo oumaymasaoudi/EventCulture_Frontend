@@ -136,63 +136,69 @@ const CreateSite = () => {
     });
   };
 
+ 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const url = siteId
-      ? `http://localhost:5000/api/sites/${siteId}`
-      : "http://localhost:5000/api/sites";
-    const method = siteId ? "PUT" : "POST";
+  const url = siteId
+    ? `http://localhost:5000/api/sites/${siteId}`
+    : "http://localhost:5000/api/sites";
 
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: site.name,
-          categorie: site.categorie,
-          description: site.description,
-          adresse: site.adresse,
-          heure_ouverture: site.heure_ouverture,
-          tarif: site.tarif,
-          telephone: site.telephone,
-          email: site.email,
-          site_web: site.site_web,
-          services: JSON.stringify(site.services),
-          transport: site.transport_en_commun,
-          periode_historique: site.periode,
-          style_architectural: site.style,
-          points_interet: site.particularites,
-          lieu_id: site.id_lieu,
-          parcours_id: site.parcours_id,
-          user_id: user.id,
-          image: site.image,
-        }),
-      });
+  const method = siteId ? "PUT" : "POST";
 
-      if (!res.ok) throw new Error("Erreur lors de la sauvegarde du site");
+  const formData = new FormData();
+  formData.append("name", site.name);
+  formData.append("categorie", site.categorie);
+  formData.append("description", site.description);
+  formData.append("adresse", site.adresse);
+  formData.append("heure_ouverture", site.heure_ouverture);
+  formData.append("tarif", site.tarif);
+  formData.append("telephone", site.telephone);
+  formData.append("email", site.email);
+  formData.append("site_web", site.site_web);
+  formData.append("services", JSON.stringify(site.services));
+  formData.append("transport", site.transport_en_commun);
+  formData.append("periode_historique", site.periode);
+  formData.append("style_architectural", site.style);
+  formData.append("points_interet", site.particularites);
+  formData.append("lieu_id", site.id_lieu);
+  formData.append("parcours_id", site.parcours_id);
+  formData.append("user_id", user.id);
 
-      const data = await res.json();
 
-      toast({
-        title: siteId ? "Site modifié" : "Site créé",
-        description: siteId
-          ? "Le site a été modifié avec succès."
-          : "Le site culturel a été ajouté avec succès.",
-      });
+  if (site.image) {
+    formData.append("image", site.image);
+  }
 
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Erreur lors de la sauvegarde du site");
+
+    const data = await res.json();
+
+    toast({
+      title: siteId ? "Site modifié" : "Site créé",
+      description: siteId
+        ? "Le site a été modifié avec succès."
+        : "Le site culturel a été ajouté avec succès.",
+    });
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Erreur",
+      description: error.message,
+      variant: "destructive",
+    });
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-200 to-purple-100">
@@ -342,12 +348,13 @@ const CreateSite = () => {
                 </div>
 
                 {/* Image */}
+                 {/* ✅ Image fichier */}
                 <div>
-                  <Label>Image (URL)</Label>
+                  <Label>Image</Label>
                   <Input
-                    value={site.image}
-                    onChange={(e) => handleChange('image', e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleChange('image', e.target.files[0])}
                   />
                 </div>
 
