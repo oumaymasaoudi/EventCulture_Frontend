@@ -29,6 +29,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound.jsx";
 import UserSettings from './pages/UserSettings.jsx';
 
+import Payment from "./pages/Payment.jsx";
 import Lieux from "./pages/Lieux.jsx";
 import Sites from "./pages/Sites.jsx";
 import Programs from "./pages/Programs.jsx";
@@ -93,6 +94,10 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings/:id" element={<UserSettings />} />
+
+
+<Route path="/payment/:id" element={<Payment />} />
+
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

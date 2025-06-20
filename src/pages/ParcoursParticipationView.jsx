@@ -2,136 +2,151 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Clock, MapPin, PlusCircle, MinusCircle } from 'lucide-react';
+import { MapPin, PlusCircle, MinusCircle } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Distance géographique
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const toRad = deg => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Ordre optimal (brute force)
+function computeOptimalOrder(sites) {
+  if (sites.length <= 2) return sites;
+  const permute = arr => arr.length <= 1 ? [arr] : arr.flatMap((v, i) => permute(arr.filter((_, j) => j !== i)).map(p => [v, ...p]));
+  return permute(sites).reduce((best, curr) => {
+    const dist = curr.slice(1).reduce((sum, site, i) => sum + haversineDistance(curr[i].latitude, curr[i].longitude, site.latitude, site.longitude), 0);
+    return dist < best.dist ? { dist, path: curr } : best;
+  }, { dist: Infinity, path: sites }).path;
+}
+
+const markerIcon = new L.Icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
 
 const ParcoursParticipationView = () => {
   const { id } = useParams();
   const token = localStorage.getItem('token');
-
   const [sites, setSites] = useState([]);
   const [selectedSites, setSelectedSites] = useState([]);
   const [parcours, setParcours] = useState(null);
 
   useEffect(() => {
-    // Charger sites
     fetch(`http://localhost:5000/api/sites/by-parcours/${id}`, {
       headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setSites(data))
-      .catch(err => console.error("Erreur chargement sites :", err));
+    }).then(res => res.json()).then(setSites);
 
-    // Charger parcours
     fetch(`http://localhost:5000/api/parcours/${id}`)
       .then(res => res.json())
-      .then(data => setParcours(data))
-      .catch(err => console.error("Erreur chargement parcours :", err));
+      .then(setParcours);
   }, [id, token]);
 
-  // Ajouter un site
-  const addSite = (site) => {
-    if (!selectedSites.find(s => s.id === site.id)) {
+  const toggleSite = (site) => {
+    const exists = selectedSites.find(s => s.id === site.id);
+    if (exists) {
+      setSelectedSites(selectedSites.filter(s => s.id !== site.id));
+    } else {
       setSelectedSites([...selectedSites, site]);
     }
   };
 
-  // Supprimer un site
-  const removeSite = (id) => {
-    setSelectedSites(selectedSites.filter(site => site.id !== id));
-  };
-
-  // Simule un ordre optimisé
-  const orderedSites = [...selectedSites].sort((a, b) => a.name.localeCompare(b.name));
-
-  // Simule distances et durées
-  const totalDistance = (orderedSites.length * 0.5).toFixed(2); // 0.5km entre chaque
-  const totalDuration = orderedSites.reduce((acc, site) => {
-    const min = parseInt(site.tarif) || 45;
-    return acc + min;
-  }, 0);
-
-  const toHHMM = (mins) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    return `${h}h${m < 10 ? '0' : ''}${m}`;
-  };
+  const orderedSites = computeOptimalOrder(selectedSites);
+  const totalDistance = orderedSites.slice(1).reduce((sum, site, i) => sum + haversineDistance(orderedSites[i].latitude, orderedSites[i].longitude, site.latitude, site.longitude), 0).toFixed(2);
 
   return (
-    <div className="min-h-screen bg-yellow-300">
+    <div className="min-h-screen bg-purple-50">
       <Header />
 
-      <div className="container mx-auto px-6 py-10">
-        <div className="grid md:grid-cols-3 gap-6">
-
-          {/* Colonne infos parcours */}
-          <div className="bg-yellow-100 p-6 rounded-xl shadow space-y-4">
-            <h2 className="text-lg font-bold">Informations du Parcours</h2>
+      <div className="container mx-auto grid md:grid-cols-2 gap-6 px-6 py-10">
+        {/* Colonne Infos + sélection */}
+        <div className="space-y-6">
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-xl font-bold mb-2">Informations du Parcours</h2>
             {parcours && (
-              <div className="space-y-2 text-sm">
-                <div><b>Titre :</b> {parcours.title}</div>
-                <div><b>Description :</b> {parcours.description}</div>
-                <div><b>Thème :</b> {parcours.theme}</div>
-                <div><b>Difficulté :</b> {parcours.difficulty}</div>
-                <div className="mt-4 bg-white p-4 border rounded-lg">
-                  <p><b>Parcours Optimisé</b></p>
-                  <p>📏 Distance : {totalDistance} km</p>
-                  <p>⏱️ Durée totale : {toHHMM(totalDuration)}</p>
-                  <p>📍 Sites : {selectedSites.length}</p>
+              <div className="text-sm space-y-1">
+                <p><b>Titre:</b> {parcours.title}</p>
+                <p><b>Description:</b> {parcours.description}</p>
+                <p><b>Thème:</b> {parcours.theme}</p>
+                <p><b>Difficulté:</b> {parcours.difficulty}</p>
+                <div className="bg-purple-100 mt-2 p-2 rounded">
+                  <p><b>Parcours Personnalisé:</b></p>
+                  <p>Distance: {totalDistance} km</p>
+                  <p>Sites sélectionnés: {selectedSites.length}</p>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Colonne sites disponibles */}
-          <div className="md:col-span-2 bg-yellow-100 p-6 rounded-xl shadow">
+          <div className="bg-white p-6 rounded-xl shadow">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold">🧠 Sélection Intelligente des Sites</h2>
-              <button onClick={() => setSelectedSites([])} className="bg-yellow-400 px-4 py-1 rounded hover:bg-yellow-500 text-sm">
-                Tout effacer
-              </button>
+              <h3 className="text-lg font-bold">Sites disponibles</h3>
+              <button className="text-red-500 text-sm" onClick={() => setSelectedSites([])}>Tout effacer</button>
             </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              {sites.map(site => {
-                const selected = selectedSites.find(s => s.id === site.id);
-                return (
-                  <div key={site.id} className="bg-white p-4 rounded-lg border space-y-2 relative">
-                    <h3 className="font-semibold">{site.name}</h3>
-                    <p className="text-sm text-gray-600">{site.description}</p>
-                    <div className="flex items-center text-xs gap-4">
-                      <span className="flex items-center gap-1 text-gray-500"><Clock className="w-4 h-4" /> {site.tarif || 45} min</span>
-                      <span className="bg-yellow-200 px-2 py-1 rounded-full">{site.categorie}</span>
-                    </div>
-                    <button
-                      onClick={() => selected ? removeSite(site.id) : addSite(site)}
-                      className={`absolute top-3 right-3 p-2 rounded-full ${selected ? 'bg-red-400' : 'bg-yellow-400'} hover:scale-110 transition`}
-                    >
-                      {selected ? <MinusCircle className="text-white w-5 h-5" /> : <PlusCircle className="text-white w-5 h-5" />}
-                    </button>
+            <div className="space-y-3">
+              {sites.map(site => (
+                <div key={site.id} className="bg-purple-50 p-3 rounded flex justify-between items-center">
+                  <div>
+                    <p className="font-semibold">{site.name}</p>
+                    <p className="text-xs text-gray-500">{site.adresse}</p>
                   </div>
-                );
-              })}
+                  <button
+                    onClick={() => toggleSite(site)}
+                    className={`p-2 rounded-full ${selectedSites.find(s => s.id === site.id) ? 'bg-red-300' : 'bg-green-300'}`}
+                  >
+                    {selectedSites.find(s => s.id === site.id) ? <MinusCircle /> : <PlusCircle />}
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Colonne ordre optimisé */}
-        {selectedSites.length > 0 && (
-          <div className="mt-10 bg-yellow-100 p-6 rounded-xl shadow">
-            <h2 className="text-lg font-bold mb-4">🗺️ Ordre du Parcours Optimisé</h2>
-            <ul className="space-y-2">
-              {orderedSites.map((site, index) => (
-                <li key={site.id} className="bg-white px-4 py-3 rounded-lg flex justify-between items-center">
-                  <div>
-                    <p className="font-semibold">{site.name}</p>
-                    <p className="text-sm text-gray-500">{site.tarif || 45} minutes de visite</p>
-                  </div>
-                  <span className="text-gray-400 text-sm">~ 0.{index + 5} km</span>
-                </li>
-              ))}
-            </ul>
+        {/* Carte + ordre */}
+        <div className="bg-white p-6 rounded-xl shadow space-y-6">
+          <h2 className="text-xl font-bold">Ordre Optimal & Carte</h2>
+
+          <ul className="space-y-2">
+            {orderedSites.map((site, i) => (
+              <li key={site.id} className="text-sm">
+                <b>{site.name}</b> - {site.adresse} ({i === 0 ? 'Départ' : `${haversineDistance(orderedSites[i - 1].latitude, orderedSites[i - 1].longitude, site.latitude, site.longitude).toFixed(2)} km`})
+              </li>
+            ))}
+          </ul>
+
+          <div className="h-[400px]">
+            {orderedSites.length > 0 && orderedSites[0]?.latitude && orderedSites[0]?.longitude && (
+  <MapContainer
+    center={[orderedSites[0].latitude, orderedSites[0].longitude]}
+    zoom={13}
+    scrollWheelZoom={true}
+    style={{ height: "400px", width: "100%" }}
+  >
+    <TileLayer
+      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      attribution="&copy; OpenStreetMap contributors"
+    />
+    {orderedSites.map((site) => (
+      <Marker key={site.id} position={[site.latitude, site.longitude]} icon={markerIcon}>
+        <Popup>{site.name}</Popup>
+      </Marker>
+    ))}
+  </MapContainer>
+)}
+
+            
           </div>
-        )}
+        </div>
       </div>
 
       <Footer />
