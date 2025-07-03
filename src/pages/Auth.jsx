@@ -15,6 +15,7 @@ import { User, KeyRound, Mail, Building, UserPlus, LogIn, Users, Briefcase, Phon
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { GoogleLogin } from '@react-oauth/google';
 
 // Schémas de validation
 const loginSchema = z.object({
@@ -32,6 +33,11 @@ const baseRegisterSchema = z.object({
   userType: z.enum(['participant', 'professionnel']),
   agreeTerms: z.boolean().refine(val => val === true, 'Vous devez accepter les conditions'),
 });
+
+const handleGoogleLogin = () => {
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=237657974922-02gqtemj5st5ugofq55lbn90onuaeqmb.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/callback&response_type=token&scope=email profile`;
+};
+
 
 const professionalRegisterSchema = baseRegisterSchema.extend({
   organization: z.string().min(2, 'Nom de l\'organisation requis'),
@@ -179,6 +185,9 @@ const Auth = () => {
               <LogIn className="w-4 h-4" />
               Se connecter
             </TabsTrigger>
+
+            
+
             <TabsTrigger 
               value="register" 
               className="flex items-center gap-2 text-black bg-white hover:bg-blue-500 hover:text-white data-[state=active]:bg-blue-500 data-[state=active]:text-white"
@@ -210,7 +219,8 @@ const Auth = () => {
                                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="votre@email.com"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -237,7 +247,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -260,14 +271,17 @@ const Auth = () => {
             </TabsContent>
 
             <TabsContent value="register">
-              <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-nude-200">
-                <CardHeader>
-                  <CardTitle className="text-xl text-slate-800">Inscription</CardTitle>
-                  <CardDescription>
-                    Créez votre compte pour accéder à toutes les fonctionnalités
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+  <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-nude-200">
+    <CardHeader>
+      <CardTitle className="text-xl text-slate-800">Inscription</CardTitle>
+      
+      <CardDescription className="text-slate-600">
+        Créez votre compte pour accéder à toutes les fonctionnalités
+      </CardDescription>
+      
+    </CardHeader>
+    <CardContent>
+
                   <Form {...registerForm}>
                     <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-6">
                       {/* Type d'utilisateur */}
@@ -321,7 +335,8 @@ const Auth = () => {
                                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder={userType === 'professionnel' ? 'Nom du responsable' : 'Votre nom complet'}
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -343,7 +358,8 @@ const Auth = () => {
                                 <Input
                                   type="email"
                                   placeholder="votre@email.com"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -367,7 +383,8 @@ const Auth = () => {
                                     <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                     <Input
                                       placeholder="Nom de votre institution"
-                                      className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                      className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                       {...field}
                                     />
                                   </div>
@@ -429,7 +446,8 @@ const Auth = () => {
                                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="06 12 34 56 78"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -450,7 +468,8 @@ const Auth = () => {
                                 <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
                                 <Input
                                   placeholder="Votre adresse complète"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -473,7 +492,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -495,7 +515,8 @@ const Auth = () => {
                                 <Input
                                   type="password"
                                   placeholder="••••••••"
-                                  className="pl-10 border-nude-200 focus:border-violet-300 focus:ring-violet-200"
+                                  className="pl-10 border-violet-700 focus:border-violet-800 focus:ring-violet-700 placeholder:text-violet-700
+"
                                   {...field}
                                 />
                               </div>
@@ -507,27 +528,31 @@ const Auth = () => {
 
                       {/* Conditions générales */}
                       <FormField
-                        control={registerForm.control}
-                        name="agreeTerms"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                                className="w-5 h-5"
-                                style={{ accentColor: 'black' }} 
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-slate-700 text-sm">
-                                J'accepte les conditions générales et la politique de confidentialité
-                              </FormLabel>
-                              <FormMessage />
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+  control={registerForm.control}
+  name="agreeTerms"
+  render={({ field }) => (
+    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+      <FormControl>
+        <Checkbox
+  checked={field.value}
+  onCheckedChange={field.onChange}
+  className="w-5 h-5 border border-gray-400 text-black"
+  style={{
+    accentColor: 'black'
+  }}
+/>
+
+      </FormControl>
+      <div className="space-y-1 leading-none">
+        <FormLabel className="text-slate-700 text-sm">
+          J'accepte les conditions générales et la politique de confidentialité
+        </FormLabel>
+        <FormMessage />
+      </div>
+    </FormItem>
+  )}
+/>
+
 
                       <Button 
                         type="submit" 

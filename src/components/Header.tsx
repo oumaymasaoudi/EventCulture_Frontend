@@ -76,6 +76,7 @@ const Header = () => {
                   <ClipboardList className="w-4 h-4 mr-3" />
                   Afficher programmes
                 </Link>
+                
               </div>
             </div>
 
@@ -209,6 +210,13 @@ const Header = () => {
                 Connexion
               </Link>
             )}
+
+             <Link
+              to="/dashboard"
+              className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-black px-4 py-2 rounded-lg font-medium transition-colors"
+            >
+              Mon espace
+            </Link>
           </div>  
         </div>
       </div>

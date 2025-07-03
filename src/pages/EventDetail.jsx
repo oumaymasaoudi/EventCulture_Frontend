@@ -1,112 +1,190 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { MapPin, Clock, Users, Edit, Trash2, Route } from 'lucide-react';
-import axios from 'axios';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, MapPin, Clock, Users, Euro, Share2, Heart, PlayCircle, Trash2, Pencil } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-const ParcoursDetail = () => {
+const EventDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [parcours, setParcours] = useState(null);
+  const { toast } = useToast();
+
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [participants, setParticipants] = useState(0);
+
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
+  const userRole = user?.role;
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:5000/api/parcours/${id}`)
-      .then((res) => setParcours(res.data))
-      .catch((err) => console.error("Erreur lors du chargement du parcours :", err));
-  }, [id]);
+    fetch(`http://localhost:5000/api/events/${id}`, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Événement introuvable');
+        return res.json();
+      })
+      .then(data => {
+        setEvent(data);
+        setParticipants(data.attendees || 0);
+      })
+      .catch(err => {
+        console.error(err);
+        toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
+      })
+      .finally(() => setLoading(false));
+  }, [id, toast]);
+
+  const handlePayment = () => {
+    toast({
+      title: "Redirection vers le paiement",
+      description: "Vous allez être redirigé vers la page de réservation.",
+    });
+    navigate(`/events/${id}/register`);
+  };
 
   const handleDelete = async () => {
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce parcours ?")) {
-      try {
-        await axios.delete(`http://localhost:5000/api/parcours/${id}`);
-        alert('Parcours supprimé avec succès.');
-        navigate('/parcours');
-      } catch (err) {
-        console.error("Erreur suppression parcours :", err);
-        alert('Erreur lors de la suppression du parcours.');
-      }
+    if (!window.confirm("Voulez-vous vraiment supprimer cet événement ?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de la suppression");
+
+      toast({ title: "Événement supprimé", description: "Redirection en cours..." });
+      navigate('/events');
+    } catch (error) {
+      toast({ title: "Erreur", description: error.message, variant: 'destructive' });
     }
   };
 
-  const handleEdit = () => {
-    navigate(`/create-parcours?id=${id}`);
-  };
-
-  if (!parcours) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-600 text-xl font-medium">
-        Chargement en cours...
-      </div>
-    );
-  }
+  if (loading) return <div>Chargement…</div>;
+  if (!event) return <div>Événement non trouvé.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-rose-50 to-teal-50">
       <Header />
-
-      <div className="container mx-auto px-4 py-12 space-y-10">
-
-        {/* Header parcours */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8 border border-gray-200">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-slate-800">{parcours.title}</h1>
-              <p className="text-slate-500 text-lg">{parcours.theme}</p>
+      <div className="container mx-auto px-4 py-8">
+        <Card className="overflow-hidden bg-white/70 backdrop-blur-sm shadow-xl border-white/50 mb-8">
+          <div className="relative h-64 md:h-80">
+            <img src={`http://localhost:5000/uploads/${event.image}`} alt={event.title} className="w-full h-full object-cover" />
+            <div className="absolute top-4 right-4 flex gap-2">
+              <Button size="sm" variant="secondary" className="bg-white/90"><Share2 /></Button>
+              <Button size="sm" variant="secondary" className="bg-white/90"><Heart /></Button>
             </div>
-            <div className="flex gap-4">
-              <Button onClick={handleEdit} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">
-                <Edit className="w-5 h-5 mr-2" />
-                Modifier
-              </Button>
-              <Button onClick={handleDelete} className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow">
-                <Trash2 className="w-5 h-5 mr-2" />
-                Supprimer
-              </Button>
+            <div className="absolute bottom-4 left-4">
+              <span className="bg-violet-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {event.category}
+              </span>
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8 mt-8">
-            <img
-              src={parcours.image ? `http://localhost:5000/uploads/${parcours.image}` : 'https://via.placeholder.com/400x400?text=Image+non+disponible'}
-              alt={parcours.title}
-              className="rounded-xl w-80 h-80 object-cover shadow-md border border-gray-200"
-            />
-            <div className="flex-1 space-y-4 text-slate-700 text-lg">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-5 h-5 text-emerald-500" />
-                <span>{parcours.Lieu ? `${parcours.Lieu.nom} (${parcours.Lieu.ville}, ${parcours.Lieu.pays})` : 'Lieu non renseigné'}</span>
+          <CardContent className="p-6">
+            <h1 className="text-3xl font-bold text-slate-800 mb-4">{event.title}</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-3 text-slate-600">
+                <div className="flex items-center"><Calendar /><span className="ml-2">{new Date(event.date_start).toLocaleDateString()}</span></div>
+                <div className="flex items-center"><Clock /><span className="ml-2">{new Date(event.date_start).toLocaleTimeString()} – {new Date(event.date_end).toLocaleTimeString()}</span></div>
+                <div className="flex items-center"><MapPin /><span className="ml-2">{event.lieu?.nom}, {event.lieu?.ville}</span></div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-indigo-500" />
-                <span>Durée : {parcours.duration} min</span>
+              <div className="space-y-3 text-slate-600">
+                <div className="flex items-center"><Users /><span className="ml-2">{participants} participants</span></div>
+                <div className="flex items-center"><Euro /><span className="ml-2 text-2xl font-bold">{event.price} €</span></div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Route className="w-5 h-5 text-purple-500" />
-                <span>Thème : {parcours.theme}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-pink-500" />
-                <span>Participants : N/A</span>
-              </div>
-              <div className="text-slate-700 font-semibold">Difficulté : {parcours.difficulty}</div>
             </div>
-          </div>
-        </div>
 
-        {/* À propos du parcours */}
-        <div className="bg-gray-100 rounded-2xl shadow p-8 border border-gray-200">
-          <h2 className="text-3xl font-bold mb-6 text-slate-800">À propos de ce parcours</h2>
-          <p className="text-slate-600 leading-relaxed text-lg">{parcours.description}</p>
-        </div>
+            <p className="text-slate-600 leading-relaxed mb-6">{event.description}</p>
 
+            <div className="flex gap-4 flex-wrap">
+              <Button onClick={handlePayment} className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+                <Euro className="mr-2" /> Réserver – {event.price} €
+              </Button>
+
+              {userRole === 'professionnel' && (
+                <>
+                  <Link to={`/create-program/event/${id}`}>
+                    <Button variant="outline" className="border-violet-300 text-violet-600 hover:bg-violet-50">
+                      Ajouter des programmes
+                    </Button>
+                  </Link>
+
+                  <Link to={`/events/edit/${id}`}>
+                    <Button variant="outline" className="border-emerald-300 text-emerald-600 hover:bg-emerald-50 flex items-center">
+                      <Pencil className="w-4 h-4 mr-2" /> Modifier
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50 flex items-center"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" /> Supprimer
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Description longue */}
+        {event.description && (
+          <Card className="bg-white/70 backdrop-blur-sm shadow-lg border-white/50 mb-8">
+            <CardHeader><CardTitle>Description détaillée</CardTitle></CardHeader>
+            <CardContent><p>{event.description}</p></CardContent>
+          </Card>
+        )}
+
+        {/* Programme */}
+        {event.programmes?.length > 0 && (
+          <Card className="bg-white/70 backdrop-blur-sm shadow-lg border-white/50 mb-8">
+            <CardHeader><CardTitle><PlayCircle /> Programme détaillé</CardTitle></CardHeader>
+            <CardContent>
+              {event.programmes.map((item, idx) => (
+                <div key={idx} className="mb-6 border-l-2 border-violet-200 pl-6 relative">
+                  <div className="absolute -left-3 top-0 w-6 h-6 bg-violet-500 rounded-full text-white flex items-center justify-center">
+                    {idx + 1}
+                  </div>
+                  <div className="bg-violet-50 rounded-lg p-4">
+                    <div className="md:flex justify-between mb-3">
+                      <div className="flex items-center mb-2 md:mb-0">
+                        <span className="bg-violet-500 text-white px-3 py-1 rounded-full mr-3">{new Date(item.date).toLocaleTimeString()}</span>
+                        <h3 className="font-semibold">{item.title}</h3>
+                      </div>
+                      <div className="flex items-center text-sm text-slate-600"><MapPin className="mr-1" /> {item.location || event.lieu?.nom}</div>
+                    </div>
+                    {item.description && <p className="text-slate-600">{item.description}</p>}
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="bg-white/70 backdrop-blur-sm shadow-lg border-white/50">
+          <CardContent>
+            <div className="flex gap-3">
+              <Link to="/events">
+                <Button variant="outline">Voir les autres événements</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-
       <Footer />
     </div>
   );
 };
 
-export default ParcoursDetail;
+export default EventDetail;

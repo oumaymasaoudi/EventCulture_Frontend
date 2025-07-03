@@ -15,18 +15,18 @@ const CreateLieu = () => {
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const navigate = useNavigate();
-  const { id } = useParams(); // on récupère l'id dans l'URL → si présent → édition
+  const { id } = useParams();
 
   const [lieu, setLieu] = useState({
     nom: '',
     pays: '',
     ville: '',
-    image: '',
     description: '',
-    site_web: ''
+    site_web: '',
   });
 
-  // Si id est présent → on va chercher le lieu pour pré-remplir les champs
+  const [imageFile, setImageFile] = useState(null);
+
   useEffect(() => {
     if (id) {
       fetch(`http://localhost:5000/api/lieux/${id}`)
@@ -36,18 +36,17 @@ const CreateLieu = () => {
         })
         .then((data) => setLieu(data))
         .catch((err) => {
-          console.error(err);
-          toast({
-            title: 'Erreur',
-            description: err.message,
-            variant: 'destructive',
-          });
+          toast({ title: 'Erreur', description: err.message, variant: 'destructive' });
         });
     }
   }, [id, toast]);
 
   const handleChange = (field, value) => {
     setLieu({ ...lieu, [field]: value });
+  };
+
+  const handleFileChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -63,6 +62,17 @@ const CreateLieu = () => {
     }
 
     try {
+      const formData = new FormData();
+      formData.append('nom', lieu.nom);
+      formData.append('pays', lieu.pays);
+      formData.append('ville', lieu.ville);
+      formData.append('description', lieu.description);
+      formData.append('site_web', lieu.site_web);
+      formData.append('user_id', user.id);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
       const method = id ? 'PUT' : 'POST';
       const url = id
         ? `http://localhost:5000/api/lieux/${id}`
@@ -71,10 +81,9 @@ const CreateLieu = () => {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ...lieu, user_id: user.id }),
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Erreur lors de l'enregistrement du lieu");
@@ -89,15 +98,12 @@ const CreateLieu = () => {
       });
 
       if (id) {
-        // Si édition → retour à liste lieux
         navigate('/lieux');
       } else {
-        // Si création → redirect vers create-parcours
         navigate(`/create-parcours?lieu_id=${data.id}`);
       }
 
     } catch (error) {
-      console.error(error);
       toast({
         title: "Erreur",
         description: error.message,
@@ -120,7 +126,7 @@ const CreateLieu = () => {
               <CardTitle>Informations du lieu</CardTitle>
             </CardHeader>
             <CardContent>
-              <form className="space-y-4" onSubmit={handleSubmit}>
+              <form className="space-y-4" onSubmit={handleSubmit} encType="multipart/form-data">
                 <div>
                   <Label htmlFor="nom">Nom du lieu</Label>
                   <Input id="nom" value={lieu.nom} onChange={(e) => handleChange('nom', e.target.value)} />
@@ -136,8 +142,8 @@ const CreateLieu = () => {
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="image">Image (URL)</Label>
-                  <Input id="image" value={lieu.image} onChange={(e) => handleChange('image', e.target.value)} />
+                  <Label htmlFor="image">Image</Label>
+                  <Input id="image" type="file" accept="image/*" onChange={handleFileChange} />
                 </div>
                 <div>
                   <Label htmlFor="site_web">Site web</Label>

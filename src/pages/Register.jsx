@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Input } from "@/components/ui/input";
@@ -13,57 +13,92 @@ const Register = () => {
   const { id } = useParams(); // id de l'événement
   const navigate = useNavigate();
 
+
   const [form, setForm] = useState({
     nom: "",
     prenom: "",
     email: "",
     telephone: "",
-    nombre_places: "1",
     demandes_speciales: "",
     motivation: "",
-    montant_paye: 25, // montant simulé
-    payment_status: "paid", // simulé comme payé
-    nom_carte: "",
-    numero_carte: "",
-    date_expiration: "",
-    cvv: "",
   });
+
+  const [nombreBillets, setNombreBillets] = useState(1);
+  const [oeuvres, setOeuvres] = useState([]); // fichiers image
+
+  const [prixUnitaire, setPrixUnitaire] = useState(0);
+
+useEffect(() => {
+  const fetchEvent = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/events/${id}`);
+      setPrixUnitaire(res.data.price); // 👉 'price' selon ton modèle Event
+    } catch (error) {
+      console.error("Erreur chargement prix événement :", error);
+    }
+  };
+
+  fetchEvent();
+}, [id]);
+
+  const montantTotal = nombreBillets * prixUnitaire;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleImageUpload = (e) => {
+    setOeuvres([...e.target.files]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      await axios.post(`http://localhost:5000/api/participations`, {
-        nom: form.nom,
-        prenom: form.prenom,
-        email: form.email,
-        telephone: form.telephone,
-        nombre_places: form.nombre_places,
-        demandes_speciales: form.demandes_speciales,
-        motivation: form.motivation,
-        montant_paye: form.montant_paye,
-        payment_status: form.payment_status,
-        user_id: user?.id,
-        event_id: id,
+      const formData = new FormData();
+
+      formData.append("nom", form.nom);
+      formData.append("prenom", form.prenom);
+      formData.append("email", form.email);
+      formData.append("telephone", form.telephone);
+      formData.append("motivation", form.motivation);
+      formData.append("demandes_speciales", form.demandes_speciales);
+      formData.append("nombre_places", nombreBillets);
+      formData.append("montant_paye", montantTotal);
+      formData.append("user_id", user?.id);
+      formData.append("event_id", id);
+      formData.append("statut", "confirmé");
+      formData.append("date_inscription", new Date().toISOString());
+
+      oeuvres.forEach((file, index) => {
+        formData.append("oeuvres_images", file);
+      });
+
+      await axios.post("http://localhost:5000/api/participations", formData , {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       toast({
         title: "Inscription réussie 🎉",
-        description: `Merci ${form.prenom}, votre participation et paiement ont bien été enregistrés.`,
+        description: `Merci ${form.prenom}, votre participation est bien enregistrée.`,
       });
 
-      navigate("/payment");
+      const paymentResponse = await axios.post("http://localhost:5000/api/payment/create-checkout-session", {
+  eventId: id,
+  quantity: nombreBillets,
+  montant: prixUnitaire,
+  userEmail: form.email,
+});
+window.location.href = paymentResponse.data.url;
+
 
     } catch (error) {
       console.error(error);
       toast({
         title: "Erreur",
-        description: "Impossible de finaliser le paiement.",
+        description: "Impossible d'enregistrer votre participation.",
         variant: "destructive",
       });
     }
@@ -77,173 +112,94 @@ const Register = () => {
           Inscription à l'événement
         </h1>
 
-        {/* Card Informations Participant */}
-        <Card className="bg-white rounded-xl shadow-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-slate-800">Informations participant</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="prenom">Prénom</Label>
-              <Input
-                type="text"
-                id="prenom"
-                name="prenom"
-                value={form.prenom}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="nom">Nom</Label>
-              <Input
-                type="text"
-                id="nom"
-                name="nom"
-                value={form.nom}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="email">Adresse e-mail</Label>
-              <Input
-                type="email"
-                id="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="telephone">Téléphone</Label>
-              <Input
-                type="text"
-                id="telephone"
-                name="telephone"
-                value={form.telephone}
-                onChange={handleChange}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="nombre_places">Nombre de places</Label>
-              <select
-                id="nombre_places"
-                name="nombre_places"
-                value={form.nombre_places}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <option value="1">1 place</option>
-                <option value="2">2 places</option>
-                <option value="3">3 places</option>
-                <option value="4">4 places</option>
-              </select>
-            </div>
-
-            <div>
-              <Label htmlFor="demandes_speciales">Demandes spéciales (optionnel)</Label>
-              <textarea
-                id="demandes_speciales"
-                name="demandes_speciales"
-                value={form.demandes_speciales}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                rows="3"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="motivation">Motivation</Label>
-              <textarea
-                id="motivation"
-                name="motivation"
-                value={form.motivation}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                rows="4"
-                placeholder="Pourquoi souhaitez-vous participer ?"
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card Paiement sécurisé */}
         <form onSubmit={handleSubmit}>
           <Card className="bg-white rounded-xl shadow-lg border border-gray-200">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-800">Paiement sécurisé</CardTitle>
+              <CardTitle className="text-xl font-bold text-slate-800">Informations participant</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="nom_carte">Nom sur la carte</Label>
-                <Input
-                  type="text"
-                  id="nom_carte"
-                  name="nom_carte"
-                  value={form.nom_carte}
-                  onChange={handleChange}
-                  placeholder="Nom du titulaire"
-                  required
-                />
+
+              <div className="text-sm text-gray-700 font-medium">
+                Tarif du billet : {prixUnitaire} € / personne
               </div>
 
-              <div>
-                <Label htmlFor="numero_carte">Numéro de carte</Label>
-                <Input
-                  type="text"
-                  id="numero_carte"
-                  name="numero_carte"
-                  value={form.numero_carte}
-                  onChange={handleChange}
-                  placeholder="1234 5678 9012 3456"
-                  required
-                />
-              </div>
-
-              <div className="flex space-x-4">
-                <div className="flex-1">
-                  <Label htmlFor="date_expiration">Date d'expiration</Label>
-                  <Input
-                    type="text"
-                    id="date_expiration"
-                    name="date_expiration"
-                    value={form.date_expiration}
-                    onChange={handleChange}
-                    placeholder="MM/AA"
-                    required
-                  />
-                </div>
-                <div className="w-24">
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input
-                    type="text"
-                    id="cvv"
-                    name="cvv"
-                    value={form.cvv}
-                    onChange={handleChange}
-                    placeholder="123"
-                    required
-                  />
-                </div>
+              <div className="flex items-center space-x-4">
+                <Label>Nombre de billets :</Label>
+                <Button type="button" onClick={() => setNombreBillets(Math.max(1, nombreBillets - 1))}>−</Button>
+                <span className="text-lg font-bold">{nombreBillets}</span>
+                <Button type="button" onClick={() => setNombreBillets(nombreBillets + 1)}>+</Button>
               </div>
 
               <div className="bg-green-50 text-green-700 p-4 rounded-md border border-green-200 text-center font-semibold">
-                Montant à payer : {form.montant_paye} €
+                Total à payer : {montantTotal} €
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-indigo-600 hover:bg-indigo-700 text-black mt-4"
-              >
-                Finaliser le paiement - {form.montant_paye} €
+              <div>
+                <Label htmlFor="prenom">Prénom</Label>
+                <Input id="prenom" name="prenom" value={form.prenom} onChange={handleChange} required />
+              </div>
+
+              <div>
+                <Label htmlFor="nom">Nom</Label>
+                <Input id="nom" name="nom" value={form.nom} onChange={handleChange} required />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Adresse e-mail</Label>
+                <Input id="email" name="email" value={form.email} onChange={handleChange} required />
+              </div>
+
+              <div>
+                <Label htmlFor="telephone">Téléphone</Label>
+                <Input id="telephone" name="telephone" value={form.telephone} onChange={handleChange} required />
+              </div>
+
+              <div>
+                <Label htmlFor="demandes_speciales">Demandes spéciales (optionnel)</Label>
+                <textarea
+                  id="demandes_speciales"
+                  name="demandes_speciales"
+                  value={form.demandes_speciales}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="3"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="motivation">Motivation</Label>
+                <textarea
+                  id="motivation"
+                  name="motivation"
+                  value={form.motivation}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows="4"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="oeuvres_images">Œuvres (upload images)</Label>
+                <Input
+                  type="file"
+                  name="oeuvres_images"
+                  id="oeuvres_images"
+                  onChange={handleImageUpload}
+                  multiple
+                  accept="image/*"
+                />
+                {oeuvres.length > 0 && (
+                  <ul className="text-sm mt-2 text-gray-600 list-disc pl-5">
+                    {Array.from(oeuvres).map((file, idx) => (
+                      <li key={idx}>{file.name}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-black mt-4">
+                Finaliser l'inscription - {montantTotal} €
               </Button>
             </CardContent>
           </Card>

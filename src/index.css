@@ -31,7 +31,8 @@
 
     --border: 231 229 228;
     --input: 231 229 228;
-    --ring: 139 92 246;
+    --ring: 76 29 149; /* violet-900 (rgb: 76, 29, 149) */
+
 
     --radius: 1rem;
 
@@ -100,10 +101,10 @@
   }
 
   input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #6b21a8 !important; /* Mauve foncé focus */
-    box-shadow: 0 0 0 2px rgba(107, 33, 168, 0.3); /* Optionnel */
-  }
+  outline: none;
+  border-color: #4c1d95 !important; /* VIOLET-900 = plus foncé */
+  box-shadow: 0 0 0 3px rgba(76, 29, 149, 0.6) !important; /* Ombre violette foncée */
+}
 
   label {
     color: #000000 !important; /* Noir pur */
@@ -156,5 +157,19 @@
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #c084fc, #a855f7);
 }
+
+::placeholder {
+  color: theme('colors.nude.700'); /* ou gris foncé lisible */
+  opacity: 1;
+}
+
+/* Important pour Leaflet */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+
 
 

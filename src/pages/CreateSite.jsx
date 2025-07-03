@@ -11,10 +11,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Save } from 'lucide-react';
 
+
+
 const CreateSite = () => {
   const { toast } = useToast();
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user"));
+
+  const [adresseQuery, setAdresseQuery] = useState('');
+const [suggestions, setSuggestions] = useState([]);
+
 
   const { id: siteId } = useParams();
   const [searchParams] = useSearchParams();
@@ -30,6 +36,8 @@ const CreateSite = () => {
     heure_ouverture: '',
     tarif: '',
     telephone: '',
+    latitude: '', 
+    longitude: '',
     email: '',
     site_web: '',
     services: [],
@@ -86,6 +94,8 @@ const CreateSite = () => {
           description: data.description || '',
           adresse: data.adresse || '',
           heure_ouverture: data.heure_ouverture || '',
+          latitude,
+          longitude,
           tarif: data.tarif || '',
           telephone: data.telephone || '',
           email: data.email || '',
@@ -136,63 +146,95 @@ const CreateSite = () => {
     });
   };
 
+const [adresseInput, setAdresseInput] = useState('');
+
+
+useEffect(() => {
+  if (adresseInput.length < 3) {
+    setSuggestions([]);
+    return;
+  }
+
+  const delay = setTimeout(() => {
+    fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(adresseInput)}&lang=fr`)
+      .then(res => res.json())
+      .then(data => {
+        const results = data.features.map(f => {
+          const { name, street, city, country } = f.properties;
+          return [name, street, city, country].filter(Boolean).join(', ');
+        });
+        setSuggestions(results);
+      })
+      .catch(err => console.error(err));
+  }, 300);
+
+  return () => clearTimeout(delay);
+}, [adresseInput]);
+
+
+ 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const url = siteId
-      ? `http://localhost:5000/api/sites/${siteId}`
-      : "http://localhost:5000/api/sites";
-    const method = siteId ? "PUT" : "POST";
+  const url = siteId
+    ? `http://localhost:5000/api/sites/${siteId}`
+    : "http://localhost:5000/api/sites";
 
-    try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: site.name,
-          categorie: site.categorie,
-          description: site.description,
-          adresse: site.adresse,
-          heure_ouverture: site.heure_ouverture,
-          tarif: site.tarif,
-          telephone: site.telephone,
-          email: site.email,
-          site_web: site.site_web,
-          services: JSON.stringify(site.services),
-          transport: site.transport_en_commun,
-          periode_historique: site.periode,
-          style_architectural: site.style,
-          points_interet: site.particularites,
-          lieu_id: site.id_lieu,
-          parcours_id: site.parcours_id,
-          user_id: user.id,
-          image: site.image,
-        }),
-      });
+  const method = siteId ? "PUT" : "POST";
 
-      if (!res.ok) throw new Error("Erreur lors de la sauvegarde du site");
+  const formData = new FormData();
+  formData.append("name", site.name);
+  formData.append("categorie", site.categorie);
+  formData.append("description", site.description);
+  formData.append("adresse", site.adresse);
+  formData.append("heure_ouverture", site.heure_ouverture);
+  formData.append("tarif", site.tarif);
+  formData.append("telephone", site.telephone);
+  formData.append("email", site.email);
+  formData.append("site_web", site.site_web);
+  formData.append("services", JSON.stringify(site.services));
+  formData.append("transport", site.transport_en_commun);
+  formData.append("periode_historique", site.periode);
+  formData.append("style_architectural", site.style);
+  formData.append("points_interet", site.particularites);
+  formData.append("lieu_id", site.id_lieu);
+  formData.append("parcours_id", site.parcours_id);
+  formData.append("user_id", user.id);
 
-      const data = await res.json();
 
-      toast({
-        title: siteId ? "Site modifié" : "Site créé",
-        description: siteId
-          ? "Le site a été modifié avec succès."
-          : "Le site culturel a été ajouté avec succès.",
-      });
+  if (site.image) {
+    formData.append("image", site.image);
+  }
 
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Erreur lors de la sauvegarde du site");
+
+    const data = await res.json();
+
+    toast({
+      title: siteId ? "Site modifié" : "Site créé",
+      description: siteId
+        ? "Le site a été modifié avec succès."
+        : "Le site culturel a été ajouté avec succès.",
+    });
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Erreur",
+      description: error.message,
+      variant: "destructive",
+    });
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-purple-200 to-purple-100">
@@ -204,7 +246,7 @@ const CreateSite = () => {
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="bg-white/90 backdrop-blur-sm border border-purple-200 shadow-lg">
+            <Card className="bg-black/90 backdrop-blur-sm border border-purple-200 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-xl text-purple-700">
                   Informations générales
@@ -266,10 +308,38 @@ const CreateSite = () => {
                 </div>
 
                 {/* Adresse */}
-                <div>
-                  <Label>Adresse complète</Label>
-                  <Input value={site.adresse} onChange={(e) => handleChange('adresse', e.target.value)} />
-                </div>
+              <Label>Adresse complète</Label>
+<div className="relative z-50">
+  <Input
+    value={site.adresse}
+    onChange={(e) => {
+      const value = e.target.value;
+      handleChange('adresse', value);
+      setAdresseInput(value);
+    }}
+    placeholder="Commencez à taper une adresse..."
+    autoComplete="off"
+  />
+  {suggestions.length > 0 && (
+    <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-1 rounded shadow max-h-60 overflow-auto z-50">
+      {suggestions.map((suggestion, index) => (
+        <li
+          key={index}
+          onClick={() => {
+            handleChange('adresse', suggestion);
+            setAdresseInput(suggestion);
+            setSuggestions([]);
+          }}
+          className="px-4 py-2 hover:bg-purple-100 cursor-pointer text-black"
+        >
+          {suggestion}
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
+
+
 
                 {/* Heures d'ouverture */}
                 <div>
@@ -342,12 +412,13 @@ const CreateSite = () => {
                 </div>
 
                 {/* Image */}
+                 {/* ✅ Image fichier */}
                 <div>
-                  <Label>Image (URL)</Label>
+                  <Label>Image</Label>
                   <Input
-                    value={site.image}
-                    onChange={(e) => handleChange('image', e.target.value)}
-                    placeholder="https://example.com/image.jpg"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleChange('image', e.target.files[0])}
                   />
                 </div>
 
@@ -359,7 +430,7 @@ const CreateSite = () => {
 
                 {/* Bouton enregistrer */}
                 <div className="text-right">
-                  <Button type="submit" className="bg-purple-600 text-white hover:bg-purple-700">
+                  <Button type="submit" className="bg-purple-600 text-black hover:bg-purple-700">
                     <Save className="w-4 h-4 mr-2" />
                     {siteId ? "Modifier le site" : "Créer le site"}
                   </Button>

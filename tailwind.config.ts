@@ -22,6 +22,8 @@ export default {
 			fontFamily: {
 				'playfair': ['Playfair Display', 'serif'],
 				'inter': ['Inter', 'sans-serif'],
+				'placeholder': '#68594b', // nude-900
+
 			},
 			colors: {
 				border: 'hsl(var(--border))',

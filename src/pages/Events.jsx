@@ -65,7 +65,8 @@ const Events = () => {
                   placeholder="Rechercher un événement..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 border-slate-200 focus:border-violet-300 focus:ring-violet-200"
+                 className="pl-10 border-slate-200 focus:!ring-2 focus:!ring-violet-900 focus:!border-violet-900"
+
                 />
               </div>
 
